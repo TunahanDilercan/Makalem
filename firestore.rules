@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /articles/{articleId} {
+      allow read: if resource.data.status == 'published' || request.auth != null;
+
+      allow create, update: if request.resource.data.keys().hasOnly([
+        'title',
+        'slug',
+        'content',
+        'category',
+        'tags',
+        'locale',
+        'wordCount',
+        'readTime',
+        'status',
+        'updatedAt',
+        'createdAt',
+        'publishedAt'
+      ])
+      && request.resource.data.title is string
+      && request.resource.data.title.size() >= 5
+      && request.resource.data.title.size() <= 180
+      && request.resource.data.content is string
+      && request.resource.data.content.size() >= 50
+      && request.resource.data.wordCount is int
+      && request.resource.data.readTime is int
+      && request.resource.data.status in ['draft', 'published'];
+
+      allow delete: if false;
+    }
+  }
+}
